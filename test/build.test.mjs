@@ -150,6 +150,7 @@ describe("the built package", () => {
     assert.deepEqual(pkg.versionIds("pap", ["current", "supported", "preview"]).reverse(), ["0.1", "0.2", "0.3", "0.4"]);
     assert.equal(pkg.reviewedPin("mcp", "git-path"), pkg.spec("mcp").reviewed.sources[1].pin);
     assert.throws(() => pkg.reviewedPin("pap", "page"), /expected one/);
+    assert.equal(pkg.reviewedPin("pap", "page", "https://personalagentprotocol.org/docs/guides"), pkg.spec("pap").reviewed.sources[4].pin);
     assert.throws(() => pkg.spec("nope"), /no spec/);
     assert.equal(pkg.spec("robots-txt").reviewed, null);
     assert.equal(pkg.sameReview(pkg.spec("mcp"), structuredClone(pkg.spec("mcp"))), true);

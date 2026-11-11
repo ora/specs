@@ -159,11 +159,11 @@ export declare function spec<I extends SpecId>(id: I): Specs[I];
 /** The ids of a spec's versions with any of these statuses, newest first (registry order). */
 export declare function versionIds<I extends SpecId, S extends VersionStatus>(id: I, statuses: readonly S[]): VersionId<I, S>[];
 /**
- * The pin of the one reviewed source of this kind (and, when given, this
- * path). Throws when the spec is not reviewed or no single source matches,
- * so a renamed source fails at import time, not silently.
+ * The pin of the one reviewed source of this kind (and, when given, at this
+ * path or URL). Throws when the spec is not reviewed or no single source
+ * matches, so a renamed source fails at import time, not silently.
  */
-export declare function reviewedPin(id: SpecId, kind: SpecSource["kind"], path?: string): string;
+export declare function reviewedPin(id: SpecId, kind: SpecSource["kind"], where?: string): string;
 /** Whether two releases reviewed a spec identically: same version, read date and pins. */
 export declare function sameReview(a: { readonly reviewed: unknown } | undefined | null, b: { readonly reviewed: unknown } | undefined | null): boolean;
 `;
@@ -183,11 +183,11 @@ export function versionIds(id, statuses) {
   return spec(id).versions.filter((v) => statuses.includes(v.status)).map((v) => v.id);
 }
 
-export function reviewedPin(id, kind, path) {
+export function reviewedPin(id, kind, where) {
   const s = spec(id);
   if (!s.reviewed) throw new Error(\`\${id} has not been reviewed\`);
-  const matches = s.reviewed.sources.filter((src) => src.kind === kind && (path === undefined || src.path === path));
-  if (matches.length !== 1) throw new Error(\`\${id} has \${matches.length} reviewed \${kind} sources\${path ? \` at \${path}\` : ""}, expected one\`);
+  const matches = s.reviewed.sources.filter((src) => src.kind === kind && (where === undefined || src.path === where || src.url === where));
+  if (matches.length !== 1) throw new Error(\`\${id} has \${matches.length} reviewed \${kind} sources\${where ? \` at \${where}\` : ""}, expected one\`);
   return matches[0].pin;
 }
 

@@ -32,7 +32,7 @@ const SCHEMA_PATH = join(ROOT, "schema", "spec.schema.json");
 const DIST = join(ROOT, "dist");
 const PLACEHOLDER = /\{([a-z0-9]+)\}/g;
 const LABEL_PLACEHOLDERS = new Set(["version", "read", "pin", "pin7", "commit"]);
-const EM_DASH = "—";
+const EM_DASH = "\u2014";
 
 /** Fill {version} {read} {pin} {pin7} {commit} from the reviewed state and its first source. */
 function resolveTemplate(template, reviewed, where, problems) {

@@ -36,7 +36,7 @@ jobs:
         run: npm run build && npm run typecheck
       - name: No em dashes anywhere
         run: |
-          if git grep -n $'—' -- . ':!package-lock.json'; then
+          if git grep -nP '\x{2014}' -- . ':!package-lock.json'; then
             echo "::error::use ' - ' instead of an em dash"
             exit 1
           fi

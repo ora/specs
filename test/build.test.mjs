@@ -93,7 +93,7 @@ describe("validate", () => {
     const start = lines.findIndex((l) => l === '    - kind: "git-path"');
     lines.splice(start, 4, `    - { kind: "git-path", repo: "o/r", path: "spec/2026-01-01", pin: "${"a".repeat(40)}" }`);
     assert.ok(problemsFor(BASE, { raw: lines.join("\n") }).some((p) => p.includes("must sit on exactly one indented")));
-    assert.ok(problemsFor({ ...BASE, name: "Demo — draft" }).some((p) => p.includes("em dash")));
+    assert.ok(problemsFor({ ...BASE, name: "Demo \u2014 draft" }).some((p) => p.includes("em dash")));
   });
 
   it("requires watched sources for an unreviewed spec, and refuses them on a reviewed one", () => {

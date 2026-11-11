@@ -55,7 +55,7 @@
               "description": "The reviewed version's id from `versions`, or null for a spec that publishes no versions.",
               "type": ["string", "null"]
             },
-            "read": { "description": "The day the reviewed state was read.", "$ref": "#/$defs/date" },
+            "read": { "description": "The day the rules derived from the reviewed state were last read. Moves only when a re-read changes a rule, not with every pin move.", "$ref": "#/$defs/date" },
             "skill": {
               "description": "The skill in skills/ that holds this spec's rules, or null when it has none yet.",
               "type": ["string", "null"],

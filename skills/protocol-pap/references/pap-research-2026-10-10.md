@@ -1,6 +1,6 @@
 # Personal Agent Protocol (PAP, "Poppy") - research snapshot 2026-10-10
 
-Source of truth: the three pages at https://personalagentprotocol.org - `/docs/spec` (the protocol), `/docs/extensions/operations` (the operations extension, version 1) and `/docs/guides` (recommended practice, not normative). Snapshot read 2026-10-10 against **Draft 0.1**, published 2026-10-09 (Apache-2.0), developed by Meta and Sierra with industry partners Genesys, Instinct, Rocket, Shopify, Stripe and Walmart (https://sierra.ai/blog/introducing-personal-agent-protocol). There is no source repository, no changelog and no dated revision directory, so drift is measured as a change in each page's normalized article text: `scripts/pap-spec-digest.mjs` produces the SHA-256 pinned in `src/lib/pap/constants.ts`, and the `pap` job in `.github/workflows/spec-drift-watch.yml` re-runs it weekly. Section numbers below (§N) are the spec page's own.
+Source of truth: the three pages at https://personalagentprotocol.org - `/docs/spec` (the protocol), `/docs/extensions/operations` (the operations extension, version 1) and `/docs/guides` (recommended practice, not normative). Snapshot read 2026-10-10 against **Draft 0.1**, published 2026-10-09 (Apache-2.0), developed by Meta and Sierra with industry partners Genesys, Instinct, Rocket, Shopify, Stripe and Walmart (https://sierra.ai/blog/introducing-personal-agent-protocol). There is no source repository, no changelog and no dated revision directory, so drift is measured as a change in each page's normalized article text (its SHA-256, from `spec-drift.mjs page-digest`, now pinned in `specs/pap/spec.yaml` of ora/specs and re-read by the daily watch). Section numbers below (§N) are the spec page's own.
 
 The draft says of itself: "Any part of it can change before a stable version, including in ways that aren't backward compatible." Treat every rule here as pinned to Draft 0.1, never as settled.
 
@@ -141,7 +141,7 @@ When the first breaking draft lands, add rows here (form, era, fate) before any 
 
 ## 13. Sources
 
-| Page | URL | Last-Modified | Normalized SHA-256 (`scripts/pap-spec-digest.mjs`) |
+| Page | URL | Last-Modified | Normalized SHA-256 (`spec-drift.mjs page-digest`) |
 |---|---|---|---|
 | Specification | https://personalagentprotocol.org/docs/spec | Fri, 09 Oct 2026 23:06:22 GMT | `833b32455bc20f6f2f248e18442a6f26e15b0d2fa0e9db0cd4246ce68b328cbd` (`PAP_SPEC_SOURCE_SHA256`) |
 | Operations extension | https://personalagentprotocol.org/docs/extensions/operations | Fri, 09 Oct 2026 23:10:29 GMT | `819e01ded9ef876ec6b83c19d513b6e2f5a3965b4c733bee99290ab523862a79` (`PAP_OPS_SOURCE_SHA256`) |

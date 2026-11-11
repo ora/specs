@@ -42,16 +42,16 @@ What Drafts 0.3 and 0.4 changed against Draft 0.2 (`pap-research-2026-10-19.md`,
 
 | Ora's own 100 KB cap, and a bot shield, are not the site's answer | Same | A document past the cap reads `not_tested`; a bot challenge at the domain's protected resource metadata reads `blocked` and the issuer checks `na` with `naKind: "unverified"`; a 429, 5xx or plain 403 there is the site's answer and fails T0-07. |
 
-### Where this branch and eralabs-ai/ora#1602 differed, and the spec text followed
+### Where this branch and an earlier implementation differed, and the spec text followed
 
-- T0-21: N/A from 0.3, because 0.3 removed the caching rule (#1602 graded it).
-- T0-22: ES256 in `token_endpoint_auth_signing_alg_values_supported` (spec 4.1 MUST accept ES256 client assertions); #1602 read it N/A.
-- T1-03: `GET {endpoint}/ora_probe/events`, the company kit's probe, since a POST body needs a request `id` (8.2); #1602 POSTed `{}`.
-- A `signed_in` entry with no issuer fails T0-07 (the file needs an issuer, 3.2); #1602 failed it at T0-15.
-- 0.3 and later probes reach only the scanned registrable domain (security review: `protected_resources` is a general RFC 9728 field); #1602 also probed the issuer's domain.
+- T0-21: N/A from 0.3, because 0.3 removed the caching rule (the earlier implementation graded it).
+- T0-22: ES256 in `token_endpoint_auth_signing_alg_values_supported` (spec 4.1 MUST accept ES256 client assertions); the earlier implementation read it N/A.
+- T1-03: `GET {endpoint}/ora_probe/events`, the company kit's probe, since a POST body needs a request `id` (8.2); the earlier implementation POSTed `{}`.
+- A `signed_in` entry with no issuer fails T0-07 (the file needs an issuer, 3.2); the earlier implementation failed it at T0-15.
+- 0.3 and later probes reach only the scanned registrable domain (security review: `protected_resources` is a general RFC 9728 field); the earlier implementation also probed the issuer's domain.
 - 0.4 files are graded by 0.4's rules rather than read `not_tested` on the rows 0.4 changed, labelled a preview since the 2026-11-09 decision to pin the published 0.3.
 - T0-07's `resource` comparison ignores host case, like the company kit.
-- Adopted from #1602: a 429 or 5xx at the domain's protected resource metadata is the site's answer and fails T0-07; only a bot challenge reads `blocked`.
+- Adopted from the earlier implementation: a 429 or 5xx at the domain's protected resource metadata is the site's answer and fails T0-07; only a bot challenge reads `blocked`.
 
 ## 3. Changes that move no graded row
 

@@ -323,7 +323,7 @@ Yes - this is the easiest pin of the protocol family: a **ratified, dated, immut
 
 ## 9. Sources
 
-All primary sources are the local checkout `/Users/liadyosef/code/personal/ext-apps/` at HEAD `10195ad9` (2026-08-12):
+All primary sources are a local checkout of https://github.com/modelcontextprotocol/ext-apps at HEAD `10195ad9` (2026-08-12):
 
 - `specification/2026-01-26/apps.mdx` - the ratified spec (1768 lines)
 - `specification/draft/apps.mdx` - the draft (2654 lines; delta in section 7 derived by diff)

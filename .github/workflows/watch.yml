@@ -1,0 +1,196 @@
+name: watch
+
+# Once a day, compares every spec in specs/<id>/spec.yaml with the state Ora
+# last reviewed (its pins), using scripts/spec-drift.mjs, the only copy of the
+# watcher. For each spec that drifted it opens or refreshes one issue that
+# links what changed, and closes the issue once the pins match again. Each
+# newly opened issue starts fix.yml, which moves the pins and drafts a review
+# in a pull request.
+#
+# It also publishes what it saw upstream to the `status` branch
+# (status.json: each spec's live source values, whether it changed, the issue
+# that tracks it). Pages such as ax.guide/specs read the latest upstream state
+# from there, so a watch run never needs an npm release. And it sends the
+# same check report to ora.ai, where /admin/spec-versions compares it with
+# the pins each Ora deploy runs (POST /api/internal/spec-drift-report,
+# SPEC_DRIFT_INGEST_SECRET; skipped while the secret is unset).
+#
+# An issue still open after 14 days is escalated once (the
+# `spec-drift-overdue` label and a comment that mentions a maintainer). A run
+# that fails opens its own `spec-drift-watch` issue, closed by the next good
+# run.
+#
+# Upstream content is untrusted: the script runs git and gh with argument
+# arrays (never a shell), matches every upstream value against a strict
+# shape, and only hashes, revision names, statuses and digests reach the
+# issues and the status file. Commit messages and page bodies never do.
+
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+# Three jobs, so the job that reads upstream repositories and pages holds no
+# write token: `check` runs read-only and hands its report to `report`, which
+# alone can write issues and the status branch; `health` records whether the
+# run as a whole worked.
+permissions:
+  contents: read
+
+concurrency:
+  group: spec-drift-watch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      outcome: ${{ steps.check.outcome }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Compare every spec with its pins
+        id: check
+        continue-on-error: true
+        run: node scripts/spec-drift.mjs check specs --out "$RUNNER_TEMP/report.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spec-drift-report
+          path: ${{ runner.temp }}/report.json
+          retention-days: 7
+
+  report:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # push status.json to the status branch only
+      issues: write
+      actions: write # start fix.yml for each newly opened issue
+    env:
+      GH_TOKEN: ${{ github.token }}
+      STATUS_BRANCH: status
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: spec-drift-report
+          path: ${{ runner.temp }}
+
+      # Allowed to fail: a stale admin page must not cost the issues or the
+      # status, and the page shows how old its report is.
+      - name: Send the report to ora.ai
+        continue-on-error: true
+        env:
+          # Fixed: a redirect must never carry the secret anywhere or pass as sent.
+          INGEST_URL: https://ora.ai/api/internal/spec-drift-report
+          SPEC_DRIFT_INGEST_SECRET: ${{ secrets.SPEC_DRIFT_INGEST_SECRET }}
+        run: |
+          if [ -z "$SPEC_DRIFT_INGEST_SECRET" ]; then
+            echo "SPEC_DRIFT_INGEST_SECRET is not set; /admin/spec-versions keeps its last report."
+            exit 0
+          fi
+          jq --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{runUrl: $run, entries: [.entries[] | {id, sources: [.sources[] | {key, kind, live, error}]}]}' \
+            "$RUNNER_TEMP/report.json" > "$RUNNER_TEMP/ingest.json"
+          # The header goes in on stdin (printf is a builtin), so the secret never sits in curl's argv.
+          # Only a 200 counts as sent: curl -f would pass a 3xx, and a 404 means the secret is missing on one side.
+          code=$(printf 'header = "Authorization: Bearer %s"\n' "$SPEC_DRIFT_INGEST_SECRET" |
+            curl -s --max-time 30 -o "$RUNNER_TEMP/ingest-response.json" -w '%{http_code}' -K - -X POST \
+              -H "Content-Type: application/json" --data-binary "@$RUNNER_TEMP/ingest.json" "$INGEST_URL")
+          if [ "$code" != "200" ]; then
+            echo "::warning::ora.ai answered HTTP $code; /admin/spec-versions keeps its last report. A 404 means SPEC_DRIFT_INGEST_SECRET differs between Vercel and this repository."
+            exit 1
+          fi
+          echo "Stored: $(cat "$RUNNER_TEMP/ingest-response.json")"
+
+      - name: Read the last published status
+        run: |
+          # The branch is missing until the first run publishes it.
+          if git ls-remote --exit-code --heads origin "$STATUS_BRANCH" >/dev/null; then
+            git fetch --depth 1 origin "+refs/heads/$STATUS_BRANCH:refs/remotes/origin/$STATUS_BRANCH"
+            git show "origin/$STATUS_BRANCH:status.json" > "$RUNNER_TEMP/status-in.json"
+          fi
+
+      - name: Open, refresh or close the drift issues
+        run: |
+          node scripts/spec-drift.mjs issues "$RUNNER_TEMP/report.json" --repo "$GITHUB_REPOSITORY" --label spec-drift \
+            --status-in "$RUNNER_TEMP/status-in.json" --status-out "$RUNNER_TEMP/status-out.json" \
+            --opened-out "$RUNNER_TEMP/opened.json" \
+            --escalate-after 14 --escalate-label spec-drift-overdue --escalate-mention @liady
+
+      - name: Publish the status
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          dir="$RUNNER_TEMP/status-branch"
+          if git rev-parse --verify --quiet "origin/$STATUS_BRANCH" >/dev/null; then
+            git worktree add --detach "$dir" "origin/$STATUS_BRANCH"
+          else
+            git worktree add --orphan -b "$STATUS_BRANCH" "$dir"
+          fi
+          cp "$RUNNER_TEMP/status-out.json" "$dir/status.json"
+          git -C "$dir" add status.json
+          if git -C "$dir" diff --cached --quiet; then
+            echo "status unchanged"
+            exit 0
+          fi
+          git -C "$dir" commit --quiet -m "chore: update spec status"
+          git -C "$dir" push origin "HEAD:refs/heads/$STATUS_BRANCH"
+
+      # After the status publish and allowed to fail: a refused dispatch must
+      # not cost the status. fix.yml's daily schedule picks up any issue whose
+      # fix run never started.
+      - name: Start a fix run for each newly opened issue
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: |
+          [ -f "$RUNNER_TEMP/opened.json" ] || exit 0
+          # Issue numbers come from the script, which only records digits.
+          for n in $(jq -r '.[].number' "$RUNNER_TEMP/opened.json"); do
+            gh workflow run fix.yml --repo "$GITHUB_REPOSITORY" -f issue="$n"
+          done
+
+      - name: Fail when a spec could not be read
+        if: needs.check.outputs.outcome == 'failure'
+        run: |
+          echo "At least one spec source could not be read; see the check job. Its issue and status were left as they were."
+          exit 1
+
+  health:
+    needs: [check, report]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # A cancelled run is not a failure.
+      FAILED: ${{ contains(needs.*.result, 'failure') || needs.check.outputs.outcome == 'failure' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Open or close the watch-failed issue
+        run: |
+          node scripts/spec-drift.mjs health --failed "$FAILED" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --out "$RUNNER_TEMP/health.json"
+          node scripts/spec-drift.mjs issues "$RUNNER_TEMP/health.json" --repo "$GITHUB_REPOSITORY" --label spec-drift-watch

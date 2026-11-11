@@ -1,0 +1,25 @@
+id: authmd
+name: "auth.md"
+homepage: https://github.com/workos/auth.md
+spec_url: "https://github.com/workos/auth.md/blob/main/AUTH.md"
+versions:
+  - { id: "0.6.0", status: current, published: "2026-06-10" }
+  - { id: "0.5.0", status: deprecated, published: "2026-06-05" }
+  - { id: "0.4.0", status: deprecated, published: "2026-06-04" }
+  - { id: "0.3.0", status: deprecated, published: "2026-06-03" }
+  - { id: "0.2.0", status: deprecated, published: "2026-06-03" }
+  - { id: "0.1", status: deprecated, published: "2026-05-21" }
+reviewed:
+  version: "0.6.0"
+  read: "2026-08-31"
+  skill: "protocol-authmd"
+  label: "v{version} + commits to {pin7} (read {read})"
+  url: "https://github.com/workos/auth.md/blob/{pin}/AUTH.md"
+  sources:
+    - kind: "git-head"
+      repo: "workos/auth.md"
+      pin: "b53c9edfbfeea679b617727ebca9ba436bade794"
+issue:
+  title: "auth.md spec moved past the pinned snapshot - re-verify protocol-authmd"
+  impact: "Drift is measured on the whole repository, because reference-implementation commits have changed behaviour without touching AUTH.md. Our auth-md checks, deep-check rubrics, and recommendation copy score and teach the reviewed state, and this spec has renamed endpoints and removed registration types in minor versions."
+  todo: "Re-verify `skills/protocol-authmd/` against the current spec (https://github.com/workos/auth.md/blob/main/AUTH.md + CHANGELOG.md, plus reference-implementation commits under `agent-services/`): update the hard rules, the era map and the `references/` report if behaviour moved, then move the git-head pin in `specs/authmd/spec.yaml` to the live HEAD listed below, together with the skill. Move `reviewed.read` only when the read date actually moves, and `reviewed.version` plus `versions` only when a new release is adopted."

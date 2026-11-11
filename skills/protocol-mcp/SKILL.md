@@ -1,0 +1,47 @@
+---
+name: protocol-mcp
+description: Use when writing, reviewing, or scoring anything that serves, probes, teaches, or grades a Model Context Protocol (MCP) server - your own MCP server and its tools, a scanner or validator that inspects servers in the wild, server cards and discovery files, recommendations or docs that tell site owners how to ship MCP. Also use when code or a diff mentions MCP, initialize, notifications/initialized, Streamable HTTP, SSE transport, Mcp-Session-Id, MCP-Protocol-Version, protocolVersion, resultType, MRTR, server card, ai-catalog.json, tools/call, inputSchema, ToolAnnotations, oauth-protected-resource, DCR, or CIMD, so generated code follows the pinned 2026-07-28 revision instead of stale training data.
+---
+
+# MCP protocol adherence
+
+Code that serves, probes, teaches, or scores MCP servers must encode the spec correctly in three distinct postures. Confusing them is the root of most divergence:
+
+| Posture | What it is | Rule |
+|---|---|---|
+| **Observer** | Code that detects what servers in the wild ship, including legacy eras (validators, discovery, classifiers, scanner checks) | MAY reference legacy forms (HTTP+SSE transport, old protocol dates, the `initialize` handshake, `Mcp-Session-Id`, DCR) as detection signatures and finding text. Never as recommended usage. |
+| **First-party author** | Your own MCP server, its server card and discovery files | Spec-current to the degree the SDK it runs on allows (see the SDK lag note below); never label legacy-era mechanics "the latest spec". |
+| **Emitter** | Code you hand to the public as guidance (recommendations, docs, generated server cards and discovery files, playbooks) | MUST be spec-current: never teach legacy SSE as a target state, never emit stale protocol dates, never recommend DCR without naming CIMD as the successor. |
+
+Which files sit in which posture is repo-specific: see "Repo overlay" below.
+
+**Spec identity.** Model Context Protocol, revision **2026-07-28** (latest stable, shipped 28 July 2026) at https://modelcontextprotocol.io/specification/2026-07-28; the TypeScript schema in the spec repo is the source of truth. Revisions are dates (`YYYY-MM-DD`); the spec's own era terms: **modern** = 2026-07-28+ (stateless, per-request `_meta`), **legacy** = 2025-11-25 and earlier (`initialize` handshake, sessions). The reviewed pin (revision, read date, and sources with the pinned revision's tree SHA) lives in `specs/mcp/spec.yaml` of ora/specs and is read through `@ora-ai/specs` (`spec("mcp").reviewed`), never restated in code constants. Precedence: **the spec wins over SDK lag** - what `@modelcontextprotocol/sdk` or `mcp-handler` have not implemented yet is noted as lag, never a reason to teach the old form. When asserting anything beyond the pin, re-read the spec first and move the pin and this skill together.
+
+**SDK lag (record it, never hide it).** The `@modelcontextprotocol/sdk` 1.x line (and `mcp-handler` 1.x, which wraps it) tops out at protocol `2025-11-25` and negotiates via `initialize` - it does not speak 2026-07-28 at all. A server on it is spec-legal (dual-era interop, twelve month deprecation windows) and matches most of the deployed ecosystem, but it is a **legacy-era** server: docs and emitted copy must not describe its mechanics as the latest revision. Modern-era serving means the v2 packages (`@modelcontextprotocol/server` 2.x, `mcp-handler` 2.x) - a migration, not a bump.
+
+**A scanner on the 1.x client inherits the same lag.** A server that speaks only 2026-07-28 (answers `initialize` with 400 + `-32020`..`-32022`, or with `data.supported` revisions) can be detected by discovery but cannot be inspected by a 1.x client: per-server checks report not applicable, never fail.
+
+## Hard rules (the 2026-07-28 contract - enforce, don't debate)
+
+1. **Streamable HTTP is the only transport to recommend.** HTTP+SSE (GET `/sse` + separate POST) is formally Deprecated with a year-long offramp; it appears in output only as a detected-legacy finding, never a target state. stdio remains valid for local servers.
+2. **Protocol revision strings are dates, and each is a distinct contract.** Current stable: `2026-07-28`. The wild mostly still speaks `2025-03-26` / `2025-06-18` / `2025-11-25` - observers accept all of these; emitters teach current. `2024-11-05` and `2025-03-26` never appear as "the current version" anywhere.
+3. **The modern era is stateless.** `initialize` / `notifications/initialized` and `Mcp-Session-Id` are removed at 2026-07-28; every request self-describes via `_meta` (`io.modelcontextprotocol/protocolVersion`, `.../clientCapabilities`) plus the `MCP-Protocol-Version` header; results carry `resultType`; server-initiated requests are replaced by MRTR interim results. Teaching material MUST NOT present the handshake or sessions as current. A server on an SDK 1.x stack legitimately still performs them (legacy era) - label it as such.
+4. **Tool `inputSchema` is required JSON Schema (2020-12 default), type object.** With composition keywords, the spec's non-normative authoring guidance (2026-11-06) keeps `properties` at the root and limits `oneOf` / `anyOf` branches to presence assertions such as `required`, so the bypassable branch-local `properties` pattern is legal but not what to teach. Names SHOULD be 1-128 chars of ASCII alphanumeric + `_` + `-` + `.` - a SHOULD, not WebMCP's MUST, so a check warns rather than hard-fails on it.
+5. **`ToolAnnotations` vocabulary is `title` / `readOnlyHint` / `destructiveHint` / `idempotentHint` / `openWorldHint`.** WebMCP's `untrustedContentHint` is NOT MCP vocabulary (the mirror of the protocol-webmcp skill's ban in the opposite direction). Annotations are hints, never security guarantees.
+6. **Auth discovery is RFC 9728 protected-resource metadata + RFC 8414 / OIDC AS metadata.** Client registration: **CIMD first** (HTTPS URL as `client_id` serving a metadata document); Dynamic Client Registration (RFC 7591) is deprecated - recommend it only as a compatibility note next to CIMD. RFC 8707 `resource` parameter always; bearer tokens in the header, never the query string.
+7. **Extensions are namespaced ids** (`io.modelcontextprotocol/tasks`, `io.modelcontextprotocol/ui`, `io.modelcontextprotocol/oauth-client-credentials`; third parties use their own reverse-domain prefix), negotiated through the `extensions` field of capabilities, opt-in and disabled by default. Tasks are extension methods (`tasks/get` polling), not core.
+8. **Error codes:** `-32020`..`-32099` is reserved spec space (`-32020` HeaderMismatch, `-32021` MissingRequiredClientCapability, `-32022` UnsupportedProtocolVersion); resource-not-found is `-32602` (was `-32002`). Never invent codes inside the reserved range.
+
+## Unstable areas (feature-detect, mark as lag, never hard-rule)
+
+Stateless-core adoption across hosts and SDKs (the wild is overwhelmingly legacy-era; treat a modern-only server as the growing minority), MRTR flows, `server/discover`, `subscriptions/listen`, the tasks extension, CIMD rollout across authorization servers, and every deprecation clock (Roots / Sampling / Logging / HTTP+SSE / DCR removals become possible ~July 2027). Full changelog and watch list: `references/mcp-research-2026-08-30.md` section 7.
+
+**Server cards (SEP-2127, marked Final in the spec repo; the extension's own spec revision is still `draft` as of 2026-11-09; extension id `io.modelcontextprotocol/server-card`, repo `ext-server-card`, formerly `experimental-ext-server-card`).** A card describes ONE server, not one site. Domain discovery is `/.well-known/ai-catalog.json` listing each card's URL; the reserved card location is `<streamable-http-url>/server-card`; a card under `.well-known` is allowed but "not recommended". Cards omit tools/resources/prompts and clients trust the live server over the card. The older SEP-1649 path `/.well-known/mcp/server-card.json` is one card per origin and stays an observed legacy location. Observers match a card to a server by the card's own address (`serverUrl` or any `remotes[].url`), never by origin. Any `/.well-known/` path resolves at the origin root (RFC 8615 section 3; the extension's discovery doc calls `.well-known` site-wide metadata), never under a path-mounted endpoint. Extension schema facts (re-read 2026-10-05 from `modelcontextprotocol/ext-server-card` `schema.json` at commit 92999cb3f5d8): required fields are exactly `$schema` (the v1 URL `https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json`), `name` (pattern `^[a-zA-Z0-9.-]+/[a-zA-Z0-9._-]+$`), `description` (max 100 chars), and `version`; `remotes` is optional, so a missing address is never a schema failure (a consumer that needs an address to match a card states that as its own requirement).
+
+## Reference
+
+`references/mcp-research-2026-08-30.md` - the full research report behind this skill: the stateless-core mechanics, the complete transport header set, MRTR, auth flows, the 2026-07-28 changelog, ecosystem lag notes, and the source list. Load it when a question goes past the hard rules above.
+
+## Repo overlay
+
+Each consuming repo keeps its own posture table (which of its files are observer, first-party author, or emitter), the SDK it actually serves on, and its own enforcement (mechanical adherence suites, reviewers) in its own rules file, alongside any decisions it makes about what to score. On repo-specific points, the overlay wins over this skill.

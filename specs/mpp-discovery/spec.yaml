@@ -1,0 +1,18 @@
+id: mpp-discovery
+name: "MPP payment discovery"
+homepage: https://paymentauth.org
+spec_url: "https://github.com/tempoxyz/mpp-specs/tree/main/specs/extensions"
+versions: []
+reviewed:
+  version: null
+  read: "2026-11-09"
+  skill: null
+  label: "Unversioned (reviewed state pinned)"
+  url: null
+  sources:
+    - kind: "git-path"
+      repo: "tempoxyz/mpp-specs"
+      path: "specs/extensions"
+      pin: "177f1326b7061f9835569b5d0ce359cc4aee706e"
+issue:
+  impact: "Checks: `mpp-support` (`src/lib/scanner/layers/access.ts`) reads an operation's `x-payment-info` offers in `/openapi.json` as an MPP declaration in Ranker 3 (`declaresPaymentDiscoveryOffers`). The draft (draft-payment-discovery) is published on paymentauth.org, not the IETF datatracker, so its source folder in tempoxyz/mpp-specs is watched: an edit in place or a new revision both move the tree."

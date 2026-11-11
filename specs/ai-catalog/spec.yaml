@@ -1,0 +1,19 @@
+id: ai-catalog
+name: "AI Catalog"
+homepage: https://github.com/Agent-Card/ai-catalog
+spec_url: "https://github.com/Agent-Card/ai-catalog/tree/main/specification"
+versions:
+  - { id: "1.0", status: current, label: "specVersion 1.0" }
+reviewed:
+  version: "1.0"
+  read: "2026-11-09"
+  skill: null
+  label: "Unversioned (reviewed state pinned)"
+  url: null
+  sources:
+    - kind: "git-path"
+      repo: "Agent-Card/ai-catalog"
+      path: "specification"
+      pin: "7ee97d9655a13e1f6442ab505982c03db17134ea"
+issue:
+  impact: "Checks: `ai-catalog-published`, and the Ranker 3 `trustManifests` reading in `ard-trust-manifest` and `ard-catalog` (`src/lib/scanner/layers/discovery.ts`, `src/lib/ard/validate.ts`), plus the drafted `ai-catalog.json` in `src/lib/agent-files/`. They score and generate against the reviewed state."

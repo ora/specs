@@ -1,0 +1,92 @@
+# Personal Agent Protocol (PAP, "Poppy") - Drafts 0.3 and 0.4 delta, 2026-11-09
+
+What Drafts 0.3 and 0.4 changed against Draft 0.2 (`pap-research-2026-10-19.md`, on top of the 0.1 baseline in `pap-research-2026-10-10.md`), how Ora grades each change, and the 0.3 and 0.4 requirements Ora does not check yet. For a file that declares 0.3 or 0.4 this file wins; files that declare 0.1 or 0.2 keep the older reports.
+
+## 1. Status and sources
+
+- **Draft 0.2** was published 2026-10-24 and is frozen at `/docs/0.2/spec`. **Draft 0.3** was published 2026-11-04 and is frozen at `/docs/0.3/spec`. **Draft 0.4** is in progress at `/docs/spec` (which redirects to `/docs/0.4/spec`); its changelog says the list "grows until 0.4 is published".
+- Read from the live pages and the spec repository (https://github.com/personal-agent-protocol/personal-agent-protocol, `main` at `a2f16ec`, 2026-11-09, after `b2569c5` added operations version 3, the Session header on website pages fetched without a browser, and the Browser Control extension, then reworded the Browser Control comparison and the Mediated Sign-In page), including `content/versions/0.3/` and `0.4/` and the company kit (`kit/company/schemas/`, `kit/company/validate/`), which the spec authors maintain and which checks Draft 0.4.
+- **Pinned draft (product owner decision, 2026-11-09): the published Draft 0.3.** Ora teaches and emits 0.3 (recommendations, the drafted poppy.json, `spec_version`, `profile` `pap-0.3@2026-11-09`, links) and grades 0.4 files by the 0.4 rules below as a **preview** of the in-progress draft (`PAP_PREVIEW_VERSIONS`; check details start "Graded as a preview of Draft 0.4 (in progress).").
+- Pins (2026-11-09): the git tree of `content/versions/0.3` at `1e12f5a` (`PAP_SPEC_SOURCE_TREE_SHA`, frozen on publication) and the `versions.json` blob `359b99e` (`PAP_VERSIONS_SOURCE_SHA`). The 0.4 rules were read from `content/versions/0.4` at tree `535c722` (`spec.mdx`, `guides.mdx`, `extensions.mdx` and the six extension pages, Mediated Sign-In and Browser Control included); that folder is not pinned, since it moves with every edit while 0.4 is in progress, so the 0.4 preview rules are re-checked whenever the unversioned working draft watches move: spec `654a1339...`, operations `f8bf4eae...`, guides `9f7c5a9a...`, read 2026-11-09 after the three 0.4 changes, plus (added on protocol review the same day, so every page feeding a graded 0.4 rule is watched) extensions `82ca57a4...`, browser-control `611e30c4...` and mediated-sign-in `b4c3b5aa...`, read at the same commit. Pinning the repository rather than the rendered pages means a new draft's banner on the old pages does not open a drift issue.
+- Live files on 2026-11-09 (GitHub code search for `/.well-known/poppy.json`, then each domain fetched): about 40, most declaring 0.1; three declare 0.2 (ifuentes.net, aeobility.com.au, www.mattpyle.com) and three declare 0.3 (cv.cm and elimfilters.com, both `web: {}` only with protected resource metadata 404, and printwithpoppy.com, with an issuer, scopes, OpenAPI, operations version 2 and Mediated Sign-In). None declares 0.4.
+
+## 2. Changes that move a graded row (files declaring 0.3 or 0.4)
+
+| Change (spec section) | 0.2 rule | Ora row for 0.3 and 0.4 |
+|---|---|---|
+| Discovery redirects may change host, but the last URL's path must be exactly `/.well-known/poppy.json` with no query (3) | Any path | T0-02 fails a file whose redirects end anywhere else. |
+| Signed-out Companies need no OAuth issuer; the issuer comes from the protected resource metadata (RFC 9728) of `https://{organization.domain}`. 404 or no `authorization_servers` = no issuer, valid only when nothing needs one; one server is the issuer (`auth.issuer` optional, must name it); several need `auth.issuer`; any other answer means no fallback (3.1, 3.2) | `auth.issuer` required whenever agent, apis, feedback or a browser endpoint is listed | T0-07 (`selectIssuer`) grades the domain metadata Ora fetches once per scan (`resolvePapCompanyIssuer`), only when `organization.domain` is the serving host, following redirects only within its registrable domain. Needs an issuer: `auth.issuer`, `signed_in` access, the Mediated Sign-In extension. A bot challenge reads `blocked`; a 429 or 5xx is the site's answer and fails, as the scanner's shield rule reads them. Still a stopping row. |
+| `protected_resources` (RFC 9728 §4) replaces `poppy_domains`; it lists `https://{domain}` for every domain of the issuer (3.2) | `poppy_domains` | T0-11 checks `protected_resources`, host case aside, and notes when only `poppy_domains` lists the domain. `boundDomains` reads the bare `https://{host}` entries for X-04 and T0-23. |
+| `grant_types_supported` is required, includes `refresh_token`, and says which sign-in types exist: `authorization_code` needs `authorization_endpoint`, the device grant needs `device_authorization_endpoint`; `auth.direct` and `auth.device` are gone (3.2, 4) | Endpoints keyed off `auth.direct` / `auth.device` | T0-12. |
+| The DPoP rules Poppy added to RFC 9449 are removed, including ES256 proofs; Companies MUST accept ES256 client assertions, which `token_endpoint_auth_signing_alg_values_supported` may advertise (4.1) | ES256 in `dpop_signing_alg_values_supported` | T0-22 (retitled "Signing algorithms valid") reads the client assertion list; N/A when absent. |
+| The rule that agents cache by HTTP caching headers is removed | SHOULD | T0-21 reads N/A. |
+| Domains sharing an issuer MUST select the same issuer; matching scope descriptions are a SHOULD (3.2) | Same `auth` block | T0-23 compares the issuer an alias file names; an alias that names none selects through its own metadata, which Ora does not fetch, so it reads `not_tested`. X-04 passes an alias that names no other issuer. |
+| Company-defined scopes; `poppy:read`, `poppy:write`, the `poppy:` reservation and `auth.custom_scopes` are gone; `auth.scopes` (descriptions) and `auth.scope_hints` (`changes`, `personal_data`) (3.1, 4.7) | Scopes from a fixed set | T0-13 checks that every description is a non-empty string and every hint has a `changes` string and a boolean `personal_data`. |
+| Mediated Sign-In moves to an extension (`extensions["mediated-sign-in"]`, version 1: `fields`, `scopes`), an OAuth extension grant `https://personalagentprotocol.org/grant/mediated-sign-in` listed in `grant_types_supported`; field names cannot be OAuth or extension parameters (Mediated Sign-In 2) | `auth.mediated` | T0-14. The grant is checked when the issuer metadata was read. |
+| `auth.disabled` (boolean) turns sign-in off: neither Mediated Sign-In nor `signed_in` access may be listed with it (3.1, 3.2) | No such field | T0-24 (new). |
+| 0.3: `excluded_tasks.url` names a JSON document of tasks agents should not attempt, each optionally with an alternative whose `openapi` or `mcp` references name APIs the file lists (9.1, 9.2) | No such field | T0-25 (new) GETs it once (100 KB cap; past it `not_tested`). 0.4 moved it behind `tasks.endpoint`, per Session, so N/A. |
+| Plain extension names now cover `operations`, `mediated-sign-in`, `links`, `disclosures`, `ucp`; 0.4 lists each extension as an array with an entry per version (3.3) | `operations` only; one object | T0-19 (0.3: object with a string version; 0.4: non-empty list of entries with string versions). |
+| Operations is version 2; 0.3 removed the operations endpoint; 0.4 adds an optional endpoint for website operations, listed only with `web.browser_session_endpoint` (Operations 2) | Version 1 with an endpoint | T0-20. Agents MUST ignore versions they do not support (3.3), so an entry with no version 2 reads N/A, like T0-14. |
+| API types other than `openapi` and `mcp` are allowed (7) | Two types | T0-16 accepts any non-empty type. |
+| An MCP server's protected resource metadata names its `url` as `resource`; one that offers account access names the issuer in `authorization_servers`; a server without metadata offers no account access (7) | Metadata required, issuer listed, ES256 when DPoP listed | T0-18 reads only the server's own (path-specific) well-known URL, as the company kit does, since the origin-level one can be the Company's domain metadata; a 404 there (`absent`) reads N/A for that server. |
+| 0.4: `web.disabled` asks agents not to browse and needs `agent` or `apis` (6) | No such field | T0-06 fails `web.disabled` with no other interface. |
+| 0.4: `supported_versions` maps versions to documents on the host that served poppy.json (3.4) | No such field | T0-08 holds each URL to that host and each key to `major.minor`. T0-27 GETs each listed document on that host (up to 3, no redirect followed) and wants the listed `protocol_version`, no `supported_versions`, and the same `organization.domain` and issuer. Both apply to 0.4 files only, labelled a preview: the frozen 0.3 spec defines no `supported_versions`, so a 0.3 file that lists it is not graded on it (T0-27 N/A; protocol review, 2026-11-09). |
+| 0.3 adds `excluded_tasks.url`, `organization.logo_uri`; 0.4 replaces `feedback.endpoint`, `excluded_tasks.url` and `skill_index` with `tasks.endpoint` (3.1, 9) | `feedback.endpoint` | T0-08's known URL fields follow the declared draft; a `tasks` (0.4) or `feedback` / `excluded_tasks` (0.3) block without its URL fails. |
+| The Session header (`Poppy-Session`) replaces Session Tokens; a request that depends on Session claims and has none gets 400 `invalid_session` in a JSON body; conversations always depend on them (5.3, 7, 8.2) | 401 with a DPoP challenge | T1-03 sends `GET {endpoint}/ora_probe/events` with no Session header, the company kit's probe, since a POST body needs a request `id` (8.2) and a body-first server would answer `invalid_request`; it passes only 400 `invalid_session`, and `conversation_not_found` fails (the endpoint looked the conversation up). |
+| The JWT bearer grant and the Session assertion are removed; every issuer supports `refresh_token` (3.2, 4, 5) | Session start at the token endpoint | T1-01 sends a `refresh_token` grant with a made-up token, Ora's probe `client_id` and a junk client assertion; `invalid_grant`, `invalid_client`, `unauthorized_client` or a DPoP error passes at any status, `invalid_request` passes with an advisory, `unsupported_grant_type` fails. |
+| Browser join: GET the endpoint for a form with a one-time code and a tying cookie, authorize the code at `{endpoint}/authorize` with the Session header, submit the form; a code that fails gets an error status and no cookie (6, 10.6) | Signed browser assertion, 303 + cookie | T1-15 (new) GETs the page as any visitor does: a 200 with a form holding a `code`, a cookie tying it to the browser (SameSite Strict or Lax, and a `__Host-` name, since spec 6 says other hosts on the domain MUST NOT be able to set it; the company kit's SHOULD for the prefix is not followed), `Cache-Control: no-store`, `frame-ancestors 'none'` or `X-Frame-Options: DENY`, and a Cross-Origin-Opener-Policy that severs the opener, as the 0.3 company kit reads spec 6 and 10.6. Secure and HttpOnly are the guides' advice, not checked. A bot challenge, 429 or 5xx is `blocked`; any other non-200 fails. The page load makes the site issue a short-lived code, as any visit does; Ora never submits it. T1-07 posts `code=<made-up>` with no cookie; any 4xx with no cookie passes (CDN cookies noted), 2xx/3xx or a cookie fails. T1-16 (new) posts `{"code": <made-up>}` to `{endpoint}/authorize` with no Session header and wants 400 `invalid_session`; `invalid_request` reads `not_tested`. |
+| Bearer-or-DPoP rules for MCP removed; the Company picks per token; every challenge an MCP server sends carries `resource_metadata` (7) | Bearer always, DPoP when listed | T1-05 grades a 401's challenges for `resource_metadata`; 400 `invalid_session` before any token check reads `not_tested`. |
+| Feedback may be accepted without a Session (0.3, 9.3); 0.4 moves `feedback.endpoint` into the per-Session tasks response | Token required | T1-13 reads N/A: Ora never sends a report, which would leave something behind. |
+| Outside discovery a redirect never carries the protocol's secrets (3) | Same | T1-14 unchanged (now named for 0.2 or later). |
+| The issuer vouches for a domain in `protected_resources`, a standard RFC 9728 field (3.2) | `poppy_domains`, a PAP-only field | Probes of a 0.3 or later file reach only the scanned registrable domain, never the issuer's (`planProbes` passes no issuer to `papProbeTarget`): a hosted sign-in provider might let each tenant fill the field, and T1-01, the probe that needed the issuer's domain, is gone (security review, 2026-11-09). |
+
+| Ora's own 100 KB cap, and a bot shield, are not the site's answer | Same | A document past the cap reads `not_tested`; a bot challenge at the domain's protected resource metadata reads `blocked` and the issuer checks `na` with `naKind: "unverified"`; a 429, 5xx or plain 403 there is the site's answer and fails T0-07. |
+
+### Where this branch and eralabs-ai/ora#1602 differed, and the spec text followed
+
+- T0-21: N/A from 0.3, because 0.3 removed the caching rule (#1602 graded it).
+- T0-22: ES256 in `token_endpoint_auth_signing_alg_values_supported` (spec 4.1 MUST accept ES256 client assertions); #1602 read it N/A.
+- T1-03: `GET {endpoint}/ora_probe/events`, the company kit's probe, since a POST body needs a request `id` (8.2); #1602 POSTed `{}`.
+- A `signed_in` entry with no issuer fails T0-07 (the file needs an issuer, 3.2); #1602 failed it at T0-15.
+- 0.3 and later probes reach only the scanned registrable domain (security review: `protected_resources` is a general RFC 9728 field); #1602 also probed the issuer's domain.
+- 0.4 files are graded by 0.4's rules rather than read `not_tested` on the rows 0.4 changed, labelled a preview since the 2026-11-09 decision to pin the published 0.3.
+- T0-07's `resource` comparison ignores host case, like the company kit.
+- Adopted from #1602: a 429 or 5xx at the domain's protected resource metadata is the site's answer and fails T0-07; only a bot challenge reads `blocked`.
+
+## 3. Changes that move no graded row
+
+- Conversation state (`working`, `handoff`, `closed`), request ids, `as_of_request`, handoff cancel, closing with 202, `version_mismatch`, `author` replacing `sender`, Direct Conversation changes, extension content in messages, Links and Disclosures extensions, UCP: behaviour behind a Session.
+- Refresh token lifetimes, sign-out semantics, account changes (`session_ended`), delegated keys and blind signing, operator signatures (Web Bot Auth), secrets out of model context, Device Sign-In link hosts, loopback redirect URIs, client metadata fetched without redirects: agent-side or authenticated behaviour.
+- `Poppy-Extensions` applies to requests that carry the Session header, which Ora's probes never send. A 0.4 Company may check `Poppy-Version` first: its 400 `version_unsupported` to a probe reads `not_tested` (a 0.3 file has no such header, so it fails there).
+
+## 4. 0.3 and 0.4 requirements Ora does not check yet
+
+- Whether the issuer publishes `scopes_supported` at all (SHOULD, 3.2): without it T0-26 reads N/A and T0-28 not tested, never a finding.
+- The 0.4 website operations endpoint (POST with no Session header should get 400 `invalid_session`): T1-09 reads `not_tested`.
+- The 0.4 tasks endpoint and its response, and the 0.3 `skill_index` document.
+- Alias domains' own protected resource metadata (T0-23 reads an alias without `auth.issuer` as `not_tested`).
+- T0-18 reads only the MCP server's path-specific metadata URL and does not follow a 401 challenge's `resource_metadata` pointer, as the company kit does, so a server that publishes its metadata elsewhere reads N/A rather than being held to spec 7.
+- 429 answers carry `Retry-After` (5.6); Ora reads a 429 as `blocked` and does not check the header.
+- HTTPS for the metadata `issuer` and every `protected_resources` entry (3), and "no path, port, or trailing slash" for the other domains `protected_resources` lists (3.2); only the scanned domain's entry and the four endpoints T0-12 names are checked.
+- The Tier 2 and 3 plan (`catalog-planned.ts`) still describes Draft 0.2 mechanisms. Its rows say so (`profile: pap-0.2@2026-10-19`, `pass_when` starting "Draft 0.2 plan, being rewritten for 0.3:", links to the frozen 0.2 pages; enforced by `spec-adherence.spec.ts`). Rewriting it for the pinned draft is a product call.
+- T0-01, T0-03 and T0-09 do not yet apply the read cap and bot shield reading T0-07 has.
+
+## 5. Era map
+
+| Form | Era | Fate |
+|---|---|---|
+| `poppy_domains` | 0.1, 0.2 | 0.3: `protected_resources`. Emitted text names it only next to its draft (`spec-adherence.spec.ts`). |
+| `auth.issuer` required for every interface | 0.1, 0.2 | 0.3: found from the domain's protected resource metadata; optional unless several servers. |
+| `auth.direct`, `auth.device`, `auth.mediated`, `auth.custom_scopes`, `poppy:read`, `poppy:write` | 0.1, 0.2 | 0.3: `grant_types_supported`, the Mediated Sign-In extension, Company scopes in `auth.scopes`. |
+| Session Tokens, Account Tokens, the JWT bearer grant, `session_id`, Session assertions | 0.1, 0.2 | 0.3: the Session header plus OAuth access and refresh tokens. |
+| DPoP everywhere except MCP; Bearer only for MCP servers without DPoP | 0.2 | 0.3: the Company decides per token; Bearer is no longer banned in emitted text. |
+| Signed browser assertion (`poppy-browser+jwt`, `return_to`) | 0.1, 0.2 | 0.3: one-time code authorized at `/authorize`. |
+| Operations version 1 with an endpoint | 0.1, 0.2 | 0.3: version 2, retry with approval; 0.4 adds an optional website endpoint. |
+| One object per extension | 0.1 to 0.3 | 0.4: a list with an entry per version. |
+| `feedback.endpoint`, `excluded_tasks.url`, `skill_index` in poppy.json | 0.2 (feedback), 0.3 | 0.4: `tasks.endpoint`. |
+
+## 6. Watch list
+
+- 0.4 is still growing: expect the weekly drift job to flag the working draft digests. Re-check the 0.4 preview rules against the change; moving digests for a change that grades nothing new keeps `PAP_SPEC_SNAPSHOT`. When `versions.json` shows 0.4 published, moving the pin to it is a product call.
+- ax.guide pins the spec, operations and guides pages (`content/standards/poppy.md` in ora/standards); the lockstep step of the weekly watch opens an issue until they match.
+- The company kit validator checks 0.4 only (`PROTOCOL_VERSION = "0.4"`), and its checks are a good model for the gaps in section 4.

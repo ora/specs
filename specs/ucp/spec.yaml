@@ -1,0 +1,17 @@
+id: ucp
+name: "UCP"
+homepage: https://github.com/Universal-Commerce-Protocol/ucp
+spec_url: "https://github.com/Universal-Commerce-Protocol/ucp/releases/latest"
+versions:
+  - { id: "v2026-08-25", status: current, url: "https://github.com/Universal-Commerce-Protocol/ucp/releases/tag/v2026-08-25" }
+reviewed:
+  version: "v2026-08-25"
+  read: "2026-10-20"
+  skill: null
+  sources:
+    - kind: "git-latest-tag"
+      repo: "Universal-Commerce-Protocol/ucp"
+      match: "^v\\d{4}-\\d{2}-\\d{2}$"
+      pin: "v2026-08-25"
+issue:
+  impact: "Checks: `ucp-support` (`src/lib/scanner/layers/access.ts`). It scores sites against the reviewed release."

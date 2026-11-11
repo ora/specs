@@ -1,0 +1,30 @@
+id: mcp
+name: "Model Context Protocol"
+homepage: https://modelcontextprotocol.io
+spec_url: "https://modelcontextprotocol.io/specification"
+revision_url: "https://modelcontextprotocol.io/specification/{revision}"
+versions:
+  - { id: "2026-07-28", status: current }
+  - { id: "2025-11-25", status: supported }
+  - { id: "2025-06-18", status: supported }
+  - { id: "2025-03-26", status: supported }
+  - { id: "2024-11-05", status: deprecated }
+reviewed:
+  version: "2026-07-28"
+  read: "2026-08-30"
+  skill: "protocol-mcp"
+  sources:
+    - kind: "git-dated-dirs"
+      repo: "modelcontextprotocol/modelcontextprotocol"
+      path: "docs/specification"
+      pin: "2026-07-28"
+    - kind: "git-path"
+      repo: "modelcontextprotocol/modelcontextprotocol"
+      path: "docs/specification/2026-07-28"
+      pin: "96b3ac6ef4f0782af3b46ce555ad9b162dafcd24"
+notes:
+  sdk_ceiling: { package: "@modelcontextprotocol/sdk", protocol: "2025-11-25" }
+issue:
+  title: "MCP spec has a revision newer than the pinned snapshot - re-verify protocol-mcp"
+  impact: "Two signals: a ratified revision newer than the pinned one, or an in-place edit to the pinned revision's folder (a published revision can change with no new folder). Our checks, emitted server cards, and recommendations score and teach the reviewed state."
+  todo: "Re-verify `skills/protocol-mcp/` against the current spec (https://modelcontextprotocol.io/specification): update the hard rules and the `references/` report if behaviour moved. For an in-place edit, move the tree pin of the reviewed revision's folder in `specs/mcp/spec.yaml` to the live tree listed below, together with the skill, WITHOUT moving `reviewed.version`. Move `reviewed.version` only when actually adopting a newer revision; then also point the tree source at the new revision's folder, re-pin it, and update `versions` (the build fails until the folder and `reviewed.version` agree)."

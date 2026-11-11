@@ -102,7 +102,7 @@ jobs:
             echo "SPEC_DRIFT_INGEST_SECRET is not set; /admin/spec-versions keeps its last report."
             exit 0
           fi
-          jq --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{runUrl: $run, entries: [.entries[] | {id, sources: [.sources[] | {key, kind, live, error}]}]}' \
+          jq --arg run "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" '{runUrl: $run, entries: [.entries[] | {id, sources: [.sources[] | {key, kind, live, error} | with_entries(select(.value != null))]}]}' \
             "$RUNNER_TEMP/report.json" > "$RUNNER_TEMP/ingest.json"
           # The header goes in on stdin (printf is a builtin), so the secret never sits in curl's argv.
           # Only a 200 counts as sent: curl -f would pass a 3xx, and a 404 means the secret is missing on one side.

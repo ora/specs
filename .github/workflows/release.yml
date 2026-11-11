@@ -1,0 +1,120 @@
+name: release
+
+# Versions are cut by release-please: every merge to main updates one release
+# pull request (version bump plus CHANGELOG.md from the Conventional Commit
+# titles). Merging that pull request tags the release, and the publish job
+# then ships @ora-ai/specs to npmjs.
+#
+# Publishing uses npm TRUSTED PUBLISHING (OIDC), on the model of oramono's
+# publish-oss.yaml: with a Trusted Publisher configured on the npmjs package
+# (GitHub Actions, ora/specs, release.yml), npm 11.5 or later exchanges this
+# job's OIDC token for a short-lived publish credential, so no long-lived
+# token is stored, and npm attaches a provenance attestation. npmjs lets a
+# Trusted Publisher be configured only on a package that already exists, so
+# the FIRST publish needs the NPM_TOKEN fallback below; delete it and the
+# secret once the Trusted Publisher is set.
+#
+# Watch runs never publish: the latest upstream state lives on the `status`
+# branch. A release carries only reviewed changes (pins, versions, skills).
+#
+# After publishing, the smoke job installs the package from the public
+# registry in a clean container and reads it, so a broken artifact fails the
+# run. Consumers pick the release up through their own specs-bump.yml.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      created: ${{ steps.rp.outputs.release_created }}
+      version: ${{ steps.rp.outputs.version }}
+      tag: ${{ steps.rp.outputs.tag_name }}
+    steps:
+      - id: rp
+        uses: googleapis/release-please-action@v5
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.created == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write # the OIDC exchange for npm trusted publishing and provenance
+    outputs:
+      version: ${{ needs.release-please.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+      - name: npm 11.5 or later (trusted publishing)
+        run: npm install --global npm@11
+      - run: npm ci
+      - name: Preflight
+        run: |
+          npm run check
+          npm test
+          npm run build
+          npm run typecheck
+          test "$(node -p "require('./package.json').version")" = "${{ needs.release-please.outputs.version }}"
+      - name: Publish
+        env:
+          # Transitional fallback ONLY, for the first publish (see the header).
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance
+      - name: Declare the outcome
+        run: |
+          echo "::notice title=PUBLISHED @ora-ai/specs ${{ needs.release-please.outputs.version }}::The smoke job must pass for this run to be green."
+          echo "## PUBLISHED: \`@ora-ai/specs@${{ needs.release-please.outputs.version }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+  smoke:
+    needs: publish
+    runs-on: ubuntu-latest
+    container: node:24-slim
+    timeout-minutes: 35
+    steps:
+      - name: Install from the registry (with propagation retries) and read it
+        shell: bash
+        env:
+          VERSION: ${{ needs.publish.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/smoke && cd /tmp/smoke && npm init -y >/dev/null
+          # A first-ever publish can sit in npmjs's new-package quarantine for up to ~25 minutes.
+          for attempt in $(seq 1 30); do
+            if npm install --save-exact "@ora-ai/specs@${VERSION}"; then break; fi
+            if [ "$attempt" = "30" ]; then echo "::error::the registry never served the package"; exit 1; fi
+            echo "registry not ready (attempt ${attempt}/30); retrying in 60s"; sleep 60
+          done
+          node --input-type=module -e "
+            import { spec, SPEC_IDS, REGISTRY_VERSION, sourceKey } from '@ora-ai/specs';
+            import data from '@ora-ai/specs/specs.json' with { type: 'json' };
+            if (REGISTRY_VERSION !== process.env.VERSION) throw new Error('version mismatch');
+            if (SPEC_IDS.length !== data.specs.length || SPEC_IDS.length < 1) throw new Error('empty registry');
+            if (!spec('mcp').current || !sourceKey(spec('mcp').sources[0])) throw new Error('mcp entry unreadable');
+            console.log('smoke OK', REGISTRY_VERSION, SPEC_IDS.length, 'specs');
+          "

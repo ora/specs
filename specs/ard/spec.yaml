@@ -1,0 +1,18 @@
+id: ard
+name: "ARD"
+homepage: https://github.com/ards-project/ard-spec
+spec_url: "https://github.com/ards-project/ard-spec/tree/main/spec"
+versions: []
+reviewed:
+  version: null
+  read: "2026-11-09"
+  skill: null
+  label: "Unversioned (reviewed state pinned)"
+  url: null
+  sources:
+    - kind: "git-path"
+      repo: "ards-project/ard-spec"
+      path: "spec"
+      pin: "eca2857d0c9b7b27aa2fb72fe3bb69fcd0d18ea9"
+issue:
+  impact: "Checks: `ard-catalog`, `ard-entries-valid` and `ard-trust-manifest` (`src/lib/scanner/layers/discovery.ts`), plus Ora's own ARD catalog (`src/lib/ard/`). They score sites, and describe Ora, against the reviewed state."

@@ -1,0 +1,11 @@
+id: llms-txt
+name: "llms.txt"
+homepage: https://llmstxt.org
+spec_url: "https://llmstxt.org/"
+versions: []
+reviewed: null
+watch:
+  - kind: "git-path"
+    repo: "AnswerDotAI/llms-txt"
+    path: "nbs/index.qmd"
+    pin: "b98807d03c6ed117d6dbcd118abab7de6f70f382"

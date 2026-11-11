@@ -1,0 +1,10 @@
+id: api-catalog
+name: "API catalog (RFC 9727)"
+homepage: https://www.rfc-editor.org/rfc/rfc9727
+spec_url: "https://www.rfc-editor.org/rfc/rfc9727"
+versions: []
+reviewed: null
+watch:
+  - kind: "rfc"
+    number: 9727
+    pin: "PROPOSED STANDARD"

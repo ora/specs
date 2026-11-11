@@ -1,0 +1,44 @@
+name: ci
+
+# Every pull request and every push to main: validate every spec file against
+# the schema and the cross-checks, run the tests, check the published types,
+# and pack the package exactly as a release would.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Validate the registry
+        run: npm run check
+      - run: npm test
+      - name: Check the published types
+        run: npm run build && npm run typecheck
+      - name: No em dashes anywhere
+        run: |
+          if git grep -nP '\x{2014}' -- . ':!package-lock.json'; then
+            echo "::error::use ' - ' instead of an em dash"
+            exit 1
+          fi
+      - name: Pack as a release would
+        run: npm pack --dry-run

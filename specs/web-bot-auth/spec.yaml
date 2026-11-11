@@ -1,0 +1,17 @@
+id: web-bot-auth
+name: "Web Bot Auth"
+homepage: https://datatracker.ietf.org/wg/webbotauth/about/
+spec_url: "https://datatracker.ietf.org/doc/draft-ietf-webbotauth-httpsig-protocol/"
+versions:
+  - { id: "01", status: current, label: "draft-ietf-webbotauth-httpsig-protocol-01" }
+  - { id: "00", status: deprecated, label: "draft-ietf-webbotauth-httpsig-protocol-00" }
+reviewed:
+  version: "01"
+  read: "2026-11-09"
+  skill: null
+  sources:
+    - kind: "ietf-draft"
+      name: "draft-ietf-webbotauth-httpsig-protocol"
+      pin: "01"
+issue:
+  impact: "Checks: `web-bot-auth-directory` (`src/lib/scanner/layers/access.ts`). Ora also signs its own requests with it (`src/lib/web-bot-auth/`), so a change can break how sites verify Ora."

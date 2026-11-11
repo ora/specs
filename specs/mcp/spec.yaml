@@ -1,5 +1,5 @@
 id: mcp
-name: "Model Context Protocol"
+name: "MCP"
 homepage: https://modelcontextprotocol.io
 spec_url: "https://modelcontextprotocol.io/specification"
 revision_url: "https://modelcontextprotocol.io/specification/{revision}"

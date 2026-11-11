@@ -1,7 +1,7 @@
 id: pap
 name: "Personal Agent Protocol"
 homepage: https://personalagentprotocol.org
-spec_url: "https://personalagentprotocol.org/docs/{version}/spec"
+spec_url: "https://personalagentprotocol.org/docs/spec"
 versions:
   - { id: "0.4", status: preview, label: "Draft 0.4 (in progress)", url: "https://personalagentprotocol.org/docs/0.4/spec" }
   - { id: "0.3", status: current, url: "https://personalagentprotocol.org/docs/0.3/spec", published: "2026-11-04" }
@@ -12,7 +12,7 @@ reviewed:
   read: "2026-11-09"
   skill: "protocol-pap"
   label: "Draft {version} (read {read})"
-  url: null
+  url: "https://personalagentprotocol.org/docs/{version}/spec"
   sources:
     - kind: "git-path"
       repo: "personal-agent-protocol/personal-agent-protocol"

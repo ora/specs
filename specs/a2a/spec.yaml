@@ -1,0 +1,17 @@
+id: a2a
+name: "A2A"
+homepage: https://a2a-protocol.org
+spec_url: "https://a2a-protocol.org/latest/specification/"
+versions:
+  - { id: "1.1.0-rc", status: preview }
+  - { id: "1.0.1", status: current }
+reviewed: null
+watch:
+  - kind: "git-latest-tag"
+    repo: "a2aproject/A2A"
+    match: "^v\\d+\\.\\d+\\.\\d+$"
+    pin: "v1.0.1"
+  - kind: "git-path"
+    repo: "a2aproject/A2A"
+    path: "docs/specification.md"
+    pin: "213a988862c011891cdb9ba4363120aef884ffc6"

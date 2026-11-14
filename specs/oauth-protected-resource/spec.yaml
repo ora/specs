@@ -1,0 +1,10 @@
+id: oauth-protected-resource
+name: "OAuth 2.0 Protected Resource Metadata (RFC 9728)"
+homepage: https://www.rfc-editor.org/rfc/rfc9728
+spec_url: "https://www.rfc-editor.org/rfc/rfc9728"
+versions: []
+reviewed: null
+watch:
+  - kind: "rfc"
+    number: 9728
+    pin: "PROPOSED STANDARD"

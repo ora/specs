@@ -1,0 +1,23 @@
+id: openapi
+name: "OpenAPI"
+homepage: https://www.openapis.org
+spec_url: "https://spec.openapis.org/oas/latest.html"
+versions:
+  - { id: "3.2.1", status: current }
+  - { id: "3.2.0", status: supported }
+  - { id: "3.1.2", status: supported }
+  - { id: "3.1.1", status: supported }
+  - { id: "3.1.0", status: supported }
+  - { id: "3.0.4", status: supported }
+  - { id: "3.0.3", status: supported }
+  - { id: "3.0.2", status: supported }
+  - { id: "3.0.1", status: supported }
+  - { id: "3.0.0", status: supported }
+  - { id: "2.0", status: deprecated, label: "Swagger 2.0" }
+reviewed: null
+watch:
+  - kind: "git-latest-file"
+    repo: "OAI/OpenAPI-Specification"
+    path: "versions"
+    match: "^\\d+\\.\\d+\\.\\d+\\.md$"
+    pin: "3.2.1.md"

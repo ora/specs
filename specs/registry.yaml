@@ -1,0 +1,17 @@
+# Defaults for every spec's drift issue. {id}, {name}, {page} (the spec file
+# on GitHub) and {file} are filled in. A spec's own `issue` overrides any of
+# them.
+issue:
+  title: "{name} spec changed since Ora last reviewed it - re-verify"
+  impact: "Every consumer of this registry scores, teaches or describes the reviewed state, so an unreviewed change can silently make them wrong."
+  todo: >-
+    Read what changed (the links below) and re-verify the spec's rules against it: its `skills/protocol-{id}/` skill when it has one,
+    including the `references/` report. Then set each moved pin in `specs/{id}/spec.yaml` to the live value listed below. Moving a pin
+    with no other change records "reviewed, nothing changed". Move `reviewed.read` only when the review re-read the spec, and
+    `reviewed.version` (plus the `versions` list) only when adopting a newer revision. The fix workflow moves the pins and drafts the
+    review in a pull request; once it merges and a release is cut, each consumer's own `specs-bump.yml` opens the bump pull request
+    where its adherence checks run.
+  watch_todo: >-
+    Nobody has reviewed this spec yet (`reviewed: null`), so this only says it changed since the registry started watching it. Read
+    what changed, then either move the watched pins in `specs/{id}/spec.yaml` to the live values below, or review the spec and fill
+    in `reviewed`.

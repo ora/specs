@@ -1,0 +1,20 @@
+id: webmcp
+name: "WebMCP"
+homepage: https://github.com/webmachinelearning/webmcp
+spec_url: "https://webmachinelearning.github.io/webmcp/"
+versions: []
+reviewed:
+  version: null
+  read: "2026-11-10"
+  skill: "protocol-webmcp"
+  label: "Editor's draft as read {read}"
+  url: null
+  sources:
+    - kind: "git-path"
+      repo: "webmachinelearning/webmcp"
+      path: "index.bs"
+      pin: "68a80fe3d10fac37dd42e2dee57b16989804392c"
+issue:
+  title: "WebMCP spec moved past the pinned snapshot - re-verify protocol-webmcp"
+  impact: "Our checks, fix snippets, and emitted templates score and teach the reviewed state, so unreviewed spec movement can silently make them wrong."
+  todo: "Re-verify `skills/protocol-webmcp/` against the current rendered draft (https://webmachinelearning.github.io/webmcp/): update the hard rules and the `references/` report if behaviour moved, then move the `index.bs` pin in `specs/webmcp/spec.yaml` to the live blob SHA listed below, together with the skill. Move `reviewed.read` only when the read date actually moves; moving the pin alone records \"reviewed, nothing changed\"."

@@ -1,0 +1,18 @@
+id: x402
+name: "x402"
+homepage: https://github.com/x402-foundation/x402
+spec_url: "https://github.com/x402-foundation/x402/tree/main/specs"
+versions: []
+reviewed:
+  version: null
+  read: "2026-11-09"
+  skill: null
+  label: "Unversioned (reviewed state pinned)"
+  url: null
+  sources:
+    - kind: "git-path"
+      repo: "x402-foundation/x402"
+      path: "specs"
+      pin: "e54f095315cfc0e936a130840c44a9c6d73bdb3f"
+issue:
+  impact: "Checks: `x402-support` (`src/lib/scanner/layers/access.ts`). It scores sites against the reviewed state."

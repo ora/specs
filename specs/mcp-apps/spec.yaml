@@ -1,0 +1,24 @@
+id: mcp-apps
+name: "MCP Apps"
+homepage: https://github.com/modelcontextprotocol/ext-apps
+spec_url: "https://github.com/modelcontextprotocol/ext-apps/tree/main/specification"
+versions:
+  - { id: "draft", status: preview, label: "Moving draft", url: "https://github.com/modelcontextprotocol/ext-apps/tree/main/specification/draft" }
+  - { id: "2026-01-26", status: current }
+reviewed:
+  version: "2026-01-26"
+  read: "2026-08-30"
+  skill: "protocol-mcp-apps"
+  sources:
+    - kind: "git-dated-dirs"
+      repo: "modelcontextprotocol/ext-apps"
+      path: "specification"
+      pin: "2026-01-26"
+    - kind: "git-path"
+      repo: "modelcontextprotocol/ext-apps"
+      path: "specification/2026-01-26"
+      pin: "670c935671dd58a22093672a8f902a1640cd9f34"
+issue:
+  title: "MCP Apps spec has a revision newer than the pinned snapshot - re-verify protocol-mcp-apps"
+  impact: "Two signals: a ratified revision newer than the pinned one, or an in-place edit to the pinned revision's folder. Changes to the moving draft never trigger this issue. Our views, bridge script, and MCP Apps checks target the reviewed state."
+  todo: "Re-verify `skills/protocol-mcp-apps/` against the current spec (https://github.com/modelcontextprotocol/ext-apps/tree/main/specification): update the hard rules and the `references/` report if behaviour moved. For an in-place edit, move the tree pin of the ratified revision's folder in `specs/mcp-apps/spec.yaml` to the live tree listed below, together with the skill, WITHOUT moving `reviewed.version`. Move `reviewed.version` only when actually adopting a newer revision; then also point the tree source at the new revision's folder and re-pin it."

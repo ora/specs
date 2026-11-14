@@ -1,0 +1,16 @@
+id: mpp
+name: "MPP"
+homepage: https://paymentauth.org
+spec_url: "https://datatracker.ietf.org/doc/draft-httpauth-payment/"
+versions:
+  - { id: "01", status: current, label: "draft-httpauth-payment-01" }
+reviewed:
+  version: "01"
+  read: "2026-10-20"
+  skill: null
+  sources:
+    - kind: "ietf-draft"
+      name: "draft-httpauth-payment"
+      pin: "01"
+issue:
+  impact: "Checks: `mpp-support` (`src/lib/scanner/layers/access.ts`). It scores sites against the reviewed draft."

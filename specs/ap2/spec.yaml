@@ -1,0 +1,18 @@
+id: ap2
+name: "AP2"
+homepage: https://github.com/google-agentic-commerce/AP2
+spec_url: "https://github.com/google-agentic-commerce/AP2/blob/main/docs/ap2/specification.md"
+versions: []
+reviewed:
+  version: null
+  read: "2026-10-20"
+  skill: null
+  label: "Unversioned (reviewed state pinned)"
+  url: null
+  sources:
+    - kind: "git-path"
+      repo: "google-agentic-commerce/AP2"
+      path: "docs/ap2/specification.md"
+      pin: "80a6dd354d2062a512281e32df42b0233af27c8f"
+issue:
+  impact: "Checks: `ap2-support` (`src/lib/scanner/layers/access.ts`). It scores sites against the reviewed state."

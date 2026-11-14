@@ -1,0 +1,24 @@
+id: nlweb
+name: "NLWeb"
+homepage: https://github.com/nlweb-ai/website
+spec_url: "https://github.com/nlweb-ai/website/blob/main/NLWEBSPEC.md"
+versions:
+  - { id: "0.55", status: current }
+  - { id: "0.54", status: deprecated }
+  - { id: "0.5", status: deprecated }
+reviewed:
+  version: "0.55"
+  read: "2026-10-15"
+  skill: "protocol-nlweb"
+  label: "v{version}"
+  url: "https://github.com/nlweb-ai/website/blob/{commit}/NLWEBSPEC.md"
+  sources:
+    - kind: "git-path"
+      repo: "nlweb-ai/website"
+      path: "NLWEBSPEC.md"
+      commit: "930136bc663994730d4762b55f1a88e332274810"
+      pin: "b62cf132e689a0e7083b87fde8ff083a1d853b8e"
+issue:
+  title: "NLWeb spec moved past the pinned snapshot - re-verify protocol-nlweb"
+  impact: "The nlweb-ask and nlweb-streaming checks, ora.ai's /ask contract and the recommendation copy score and teach the reviewed state."
+  todo: "Re-verify `skills/protocol-nlweb/` against the current `NLWEBSPEC.md` (https://github.com/nlweb-ai/website/blob/main/NLWEBSPEC.md): update the hard rules and the `references/` report if behaviour moved, then move the blob pin in `specs/nlweb/spec.yaml` to the live blob listed below and its `commit` to the last commit touching the file, together with the skill, plus `reviewed.version` and `versions` if the spec's version moved. Move `reviewed.read` only when the read date actually moves."

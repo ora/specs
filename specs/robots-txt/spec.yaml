@@ -1,0 +1,10 @@
+id: robots-txt
+name: "Robots Exclusion Protocol (RFC 9309)"
+homepage: https://www.rfc-editor.org/rfc/rfc9309
+spec_url: "https://www.rfc-editor.org/rfc/rfc9309"
+versions: []
+reviewed: null
+watch:
+  - kind: "rfc"
+    number: 9309
+    pin: "PROPOSED STANDARD"

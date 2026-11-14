@@ -1,0 +1,56 @@
+{
+  "name": "@ora-ai/specs",
+  "version": "0.1.0",
+  "description": "The registry of agent protocol specs Ora tracks: each spec's versions, its live upstream sources, and the state Ora last reviewed.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/ora/specs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ora/specs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ora/specs/issues"
+  },
+  "keywords": ["agent", "protocol", "spec", "mcp", "webmcp", "registry"],
+  "engines": {
+    "node": ">=20"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./kinds": {
+      "types": "./dist/kinds.d.ts",
+      "default": "./dist/kinds.js"
+    },
+    "./specs.json": "./dist/specs.json",
+    "./schema.json": "./dist/schema.json",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/build.mjs --check",
+    "test": "node --test \"test/*.test.mjs\"",
+    "typecheck": "tsc -p test/types/tsconfig.json",
+    "drift": "node scripts/spec-drift.mjs check specs --dry-run",
+    "prepack": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "typescript": "5.9.3",
+    "yaml": "2.9.1"
+  }
+}

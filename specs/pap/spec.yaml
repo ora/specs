@@ -1,0 +1,47 @@
+id: pap
+name: "Personal Agent Protocol"
+homepage: https://personalagentprotocol.org
+spec_url: "https://personalagentprotocol.org/docs/spec"
+versions:
+  - { id: "1.0", status: current, label: "Draft 1.0 (in progress)", url: "https://personalagentprotocol.org/docs/1.0/spec" }
+  - { id: "0.4", status: supported, url: "https://personalagentprotocol.org/docs/0.4/spec", published: "2026-11-10" }
+  - { id: "0.3", status: supported, url: "https://personalagentprotocol.org/docs/0.3/spec", published: "2026-11-04" }
+  - { id: "0.2", status: supported, url: "https://personalagentprotocol.org/docs/0.2/spec", published: "2026-10-24" }
+  - { id: "0.1", status: supported, url: "https://personalagentprotocol.org/docs/0.1/spec", published: "2026-10-09" }
+reviewed:
+  version: "1.0"
+  read: "2026-11-13"
+  skill: "protocol-pap"
+  label: "Draft {version} (read {read})"
+  url: "https://personalagentprotocol.org/docs/{version}/spec"
+  sources:
+    - kind: "git-path"
+      repo: "personal-agent-protocol/personal-agent-protocol"
+      path: "content/versions/1.0"
+      pin: "0800017f4ba402b8f5616b20eacf32ae8b103f0a"
+    - kind: "git-path"
+      repo: "personal-agent-protocol/personal-agent-protocol"
+      path: "content/versions/versions.json"
+      pin: "ff7c9a373e46e3f23957eae598cf1bf172e1b769"
+    - kind: "page"
+      url: "https://personalagentprotocol.org/docs/spec"
+      pin: "396c448f352fddc00a4ec3c9659142381d4a058f69873c8024fcafebc4443d33"
+    - kind: "page"
+      url: "https://personalagentprotocol.org/docs/extensions/operations"
+      pin: "3ff24dccc84e121b638ab6f448bd9fd56188350c9723bbccac6bd2d15e5b846c"
+    - kind: "page"
+      url: "https://personalagentprotocol.org/docs/guides"
+      pin: "fc46a65967b779f7e1e8e3cf338803a9d2c26b51e5d0b480682d961b8d3946fe"
+    - kind: "page"
+      url: "https://personalagentprotocol.org/docs/extensions"
+      pin: "82ca57a473356ae3c0010acb42dff23f107612ac9cbb97b7ece36b50c3c82b03"
+    - kind: "page"
+      url: "https://personalagentprotocol.org/docs/extensions/browser-control"
+      pin: "611e30c47fef811bef0d4fbf682218f16353962df010763e879134e7dc759bd0"
+    - kind: "page"
+      url: "https://personalagentprotocol.org/docs/extensions/mediated-sign-in"
+      pin: "038750a9437204cb4142ea17a2fdffdece2f4ca5b64a89dd530ad4d656f52b13"
+issue:
+  title: "Personal Agent Protocol spec moved past the pinned sources - re-verify protocol-pap"
+  impact: "The reviewed draft is 1.0, still in progress: the spec's authors ask builders to use it, and it takes only fixes, which can break compatibility. Drafts 0.1 to 0.4 are published and frozen, each graded by its own rules, and the latest published version is 0.4. The pins follow the spec repository rather than the rendered pages, whose banners change when a new draft starts. The tree of the reviewed draft's source folder (`content/versions/1.0`) moves with every edit to the in-progress draft, so each move means the text consumers teach changed. The blob of `content/versions/versions.json` moves when a draft is published or a new one starts. The working draft page digests (the unversioned `/docs/spec`, `/docs/guides`, `/docs/extensions`, `/docs/extensions/operations`, `/docs/extensions/browser-control` and `/docs/extensions/mediated-sign-in`) follow whatever draft those pages serve, Draft 1.0 as of 2026-11-13, and name the page that moved. Consumers grade and teach the reviewed state."
+  todo: "For the moved 1.0 tree: diff the folder between the pin and the live tree (the changelog's draft 1.0 section lists each fix) and re-verify `skills/protocol-pap/`, then move the pin, and `reviewed.read` when a rule moved. For versions.json: read what moved; if Draft 1.0 was published, add its `published` date in `versions` and freeze the pin, and if a new draft started, add it to `versions` as `preview`, then move the versions.json pin. For a working draft digest: diff the old and new text with `node scripts/spec-drift.mjs page-text <page.html or URL>`, re-check the rules that page feeds, then move the digest; moving a pin alone records \"reviewed, nothing changed\"."

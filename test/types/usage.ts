@@ -5,7 +5,7 @@ type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ?
 const assertType = <T extends true>(): T => true as T;
 
 const pap = versionIds("pap", ["current", "supported", "preview"] as const);
-assertType<Equal<(typeof pap)[number], "0.4" | "0.3" | "0.2" | "0.1">>();
+assertType<Equal<(typeof pap)[number], "1.0" | "0.4" | "0.3" | "0.2" | "0.1">>();
 assertType<Equal<VersionId<"mcp", "current">, "2026-07-28">>();
 const current: "2026-07-28" = spec("mcp").current;
 const pin: string = reviewedPin("webmcp", "git-path");

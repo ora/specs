@@ -147,7 +147,7 @@ describe("the built package", () => {
   it("exposes current, supported and reviewed state for every spec, and refuses an unknown id", async () => {
     const pkg = await import(join(ROOT, "dist/index.js"));
     assert.equal(pkg.spec("mcp").current, "2026-07-28");
-    assert.deepEqual(pkg.versionIds("pap", ["current", "supported", "preview"]).reverse(), ["0.1", "0.2", "0.3", "0.4"]);
+    assert.deepEqual(pkg.versionIds("pap", ["current", "supported", "preview"]).reverse(), ["0.1", "0.2", "0.3", "0.4", "1.0"]);
     assert.equal(pkg.reviewedPin("mcp", "git-path"), pkg.spec("mcp").reviewed.sources[1].pin);
     assert.throws(() => pkg.reviewedPin("pap", "page"), /expected one/);
     assert.equal(pkg.reviewedPin("pap", "page", "https://personalagentprotocol.org/docs/guides"), pkg.spec("pap").reviewed.sources[4].pin);

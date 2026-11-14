@@ -31,7 +31,7 @@ import { spec, versionIds, reviewedPin, SPECS } from "@ora-ai/specs";
 
 spec("mcp").current;                                   // "2026-07-28"
 spec("mcp").supported;                                 // ["2025-11-25", "2025-06-18", "2025-03-26"]
-versionIds("pap", ["current", "supported", "preview"]); // ["0.4", "0.3", "0.2", "0.1"], typed as those literals
+versionIds("pap", ["current", "supported", "preview"]); // ["1.0", "0.4", "0.3", "0.2", "0.1"], typed as those literals
 spec("webmcp").reviewed?.read;                         // "2026-11-10"
 reviewedPin("webmcp", "git-path");                     // the reviewed index.bs blob SHA
 ```
